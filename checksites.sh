@@ -10,11 +10,23 @@ if [[ ! -f $SITE_LIST ]];then
   exit 1
 fi
 
+FAIL_COUNT=0
+
 while read url; do
-  RESPONSE=`curl -L -s -o /dev/null -w "%{http_code}" ${url}`
-  if [[ $RESPONSE == 401 ]]; then
-    echo "${url}: OK"
+  RESPONSE=`curl -L -s -m 5 -o /dev/null -w "%{http_code}" ${url}`
+  if [[ $RESPONSE == 401 ]] || [[ $RESPONSE == 403 ]]; then
+    echo "${url}: $RESPONSE OK"
+  elif [[ $RESPONSE == 000 ]]; then
+    echo "${url} timed out..."
   else
+  	((FAIL_COUNT++))
     echo "${url} is NOT protected: ${RESPONSE}"
   fi
 done <$SITE_LIST
+
+echo
+echo "---------------------"
+echo "Failed: ${FAIL_COUNT}"
+echo
+
+exit 0
