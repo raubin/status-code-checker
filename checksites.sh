@@ -12,8 +12,10 @@ if [[ ! -f $SITE_LIST ]];then
 fi
 
 CHECKED_COUNT=0
-PASS_COUNT=0
+PROTECTED_COUNT=0
 FAIL_COUNT=0
+UNPROTECTED_COUNT=0
+LINE=0
 
 while read url; do
 
@@ -21,14 +23,16 @@ while read url; do
   ((CHECKED_COUNT++))
 
   if [[ $RESPONSE == 401 ]] || [[ $RESPONSE == 403 ]]; then
-    ((PASS_COUNT++))
+    ((PROTECTED_COUNT++))
     # echo "${url}: $RESPONSE OK"
-  elif [[ $RESPONSE == 000 ]]; then
+  elif [[ $RESPONSE == 000 ]] || [[ $RESPONSE == 500 ]] || [[ $RESPONSE == 400 ]]; then
+    ((LINE++))
     ((FAIL_COUNT++))
-    echo "${FAIL_COUNT}. ${url} timed out..."
+    echo "${LINE}. ${url} could not be reached"
   else
-  	((FAIL_COUNT++))
-    echo "${FAIL_COUNT}. ${url} is NOT protected: ${RESPONSE}"
+    ((LINE++))
+  	((UNPROTECTED_COUNT++))
+    echo "${LINE}. ${url} is NOT protected: ${RESPONSE}"
   fi
 
 done <$SITE_LIST
@@ -36,8 +40,9 @@ done <$SITE_LIST
 echo
 echo "---------------------"
 echo "Checked: ${CHECKED_COUNT}"
-echo "Passed: ${PASS_COUNT}"
-echo "Failed: ${FAIL_COUNT}"
+echo "Passed: ${PROTECTED_COUNT}"
+echo "Unreachable: ${FAIL_COUNT}"
+echo "Unprotected: ${UNPROTECTED_COUNT}"
 echo ""
 echo
 
