@@ -17,6 +17,9 @@ FAIL_COUNT=0
 UNPROTECTED_COUNT=0
 LINE=0
 
+echo "Verifying protected sites are unreachable..."
+echo
+
 while read url; do
 
   RESPONSE=`curl -L -s -m 5 -o /dev/null -w "%{http_code}" ${url}`
